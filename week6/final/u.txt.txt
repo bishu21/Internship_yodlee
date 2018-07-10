@@ -1,0 +1,3 @@
+water-Water,Sewer,River,Irrigation,Lake,Waste,Waterworks,Pipeline,Hydro,Sewage,Wastewater,Sanitation,Pump,Well,Sanitary,Pump,Well,Aqua,Disposal,Groundwater,River
+electricity-Light,Power,Electric,Elect,Elec,Wind,Solar,Entergy,Renewable,Hydroelectric,Elctrc
+gas-Gas,Oil,Energy,Natural,Oil,Propane,Fuel,Petroleum,Nuclear,Gasoline,Engery

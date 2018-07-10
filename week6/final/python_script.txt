@@ -1,0 +1,99 @@
+import urllib
+import pandas as pd
+import requests
+import time
+from bs4 import BeautifulSoup
+from sys import argv
+
+def google_search_text(merchant_name):
+    search = "http://www.google.co.uk/search?hl=en&q=" + merchant_name
+    r = requests.get(search)
+    soup = BeautifulSoup(r.text, "html.parser")
+    # kill all script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()    # rip it out
+
+    # get text
+    text = soup.get_text()
+    
+    time.sleep(1)
+    for key in utility_search:
+        keywords=utility_search[key]
+        for word in keywords:
+            if(word in text):
+                return key
+    return ""        
+  
+def google_search_inURL(merchant_name):
+    search = "http://www.google.co.uk/search?hl=en&q=" + merchant_name
+    r = requests.get(search)
+    soup = BeautifulSoup(r.text, "html.parser")
+    container = soup.find('div',{'id':'search'})
+    url = container.findAll("cite")
+    
+    
+    time.sleep(1)
+   
+    for line1 in url:
+        l=line1.text
+        for key in utility_search:
+            keywords=utility_search[key]
+            for word in keywords:
+                if(word in l):
+                    return key
+
+    return ""
+            
+def direct_search(x,y):
+    l=x['name']
+    keywords=utility_search[y]
+    for word in keywords:
+        if(word in l):
+            return "YES"
+    else:
+        return "NO"
+
+program_name = argv[0]
+arguments = argv[1:]
+count = len(arguments)
+print(arguments)
+
+if(count==2):
+    final=pd.read_excel(arguments[0],sheet_name="data")
+    final=final[['name','existence']]
+    f1=open(arguments[1],"r")
+    utility_search={}
+    for line in f1:
+        line=line.strip()
+        line=line.split("-")
+        utility_search[line[0]]=line[1].split(",")
+    for key in utility_search:
+        final[key]=final.apply(direct_search,y=key,axis=1)
+
+    #print(final)
+    count=0
+    for index,row in final.iterrows():
+        flag=0
+        for key in utility_search:
+            if(row[key]=="YES"):
+                flag=1
+                break
+        if(flag==0):   
+            count+=1     
+            if(count>=500):
+                time.sleep(5)
+                count=0
+            utility=google_search_text(row['name'])
+            if(utility==""):
+                print(row['name']+" Not found on google")
+            else:
+                #print(row['name']+"  "+utility)
+                final.set_value(index,utility,"YES")
+                
+
+    #print(final)            
+    final.to_excel("fur_classified_last1.xlsx")
+else:
+    print("Invalid Number of arguments!! Try 2 arguments")
+
+    
